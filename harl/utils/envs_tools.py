@@ -231,7 +231,7 @@ def make_render_env(env_name, seed, env_args):
     elif env_name == "hemac":
         from harl.envs.hemac.hemac_env import HeMACEnv
 
-        env = HeMACEnv(env_args)
+        env = HeMACEnv({**env_args, "render_mode": "human"})
         env.seed(seed * 60000)
     else:
         print("Can not support the " + env_name + "environment.")
