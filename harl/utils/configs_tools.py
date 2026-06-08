@@ -1,4 +1,5 @@
 """Tools for loading and updating configs."""
+
 import time
 import os
 import json
@@ -66,6 +67,8 @@ def get_task_name(env, env_args):
         task = env_args["task"]
     elif env == "lag":
         task = f"{env_args['scenario']}-{env_args['task']}"
+    elif env == "hemac":
+        task = env_args.get("task", "hemac")
     return task
 
 
