@@ -1,14 +1,14 @@
-time_factor: 0.5
-area_size: [500, 500]
-max_cycles: 50
+time_factor: 1
+area_size: [1000,1000]
+max_cycles: 600
 render_ratio: 0.6
 n_observers: 1
-n_drones: 2
+n_drones: 1
 n_provisioners: 0
-min_obstacles: 1
-max_obstacles: 2
-rescuing_targets: True
-observer_comm_range: 300
+min_obstacles: 0
+max_obstacles: 0
+rescuing_targets: False
+observer_comm_range: 150
 patrol_config:
   benchmark: True
   area:
@@ -18,24 +18,24 @@ patrol_config:
     - [600, 800]
     - [100, 620]
 poi_config:
-  - speed: 1.0
+  - speed: 2.0
     dimension: [8, 8]
     spawn_mode: random
 drone_config:
   drones_starting_pos: []
   drone_ui_dimension: 16
   drone_max_speed: 10
-  drone_max_charge: 9999
+  drone_max_charge: 100
   discrete_action_space: True
 drone_sensor:
   model: RoundCamera
   params:
-    sensing_range: 30
+    sensing_range: 50
 observer_sensor:
   model: ForwardFacingCamera
   params:
     hfov: 0.5235987755982988
-    sensing_range: 100
+    sensing_range: 200
 provisioner_sensor:
   model: ForwardFacingCamera
   params:
