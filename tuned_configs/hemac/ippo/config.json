@@ -1,0 +1,161 @@
+{
+    "algo_args": {
+        "algo": {
+            "action_aggregation": "prod",
+            "actor_num_mini_batch": 1,
+            "clip_param": 0.2,
+            "critic_epoch": 5,
+            "critic_num_mini_batch": 1,
+            "entropy_coef": 0.01,
+            "fixed_order": true,
+            "gae_lambda": 0.95,
+            "gamma": 0.9,
+            "huber_delta": 10.0,
+            "max_grad_norm": 5.0,
+            "ppo_epoch": 5,
+            "share_param": false,
+            "use_clipped_value_loss": true,
+            "use_gae": true,
+            "use_huber_loss": true,
+            "use_max_grad_norm": true,
+            "use_policy_active_masks": true,
+            "value_loss_coef": 1
+        },
+        "device": {
+            "cuda": true,
+            "cuda_deterministic": true,
+            "torch_threads": 4
+        },
+        "eval": {
+            "eval_episodes": 20,
+            "n_eval_rollout_threads": 10,
+            "use_eval": true
+        },
+        "logger": {
+            "log_dir": "./results"
+        },
+        "model": {
+            "activation_func": "tanh",
+            "critic_lr": 0.0005,
+            "data_chunk_length": 10,
+            "gain": 0.01,
+            "hidden_sizes": [
+                256,
+                256
+            ],
+            "initialization_method": "orthogonal_",
+            "lr": 5e-05,
+            "opti_eps": 1e-05,
+            "recurrent_n": 1,
+            "std_x_coef": 1,
+            "std_y_coef": 0.5,
+            "use_feature_normalization": true,
+            "use_naive_recurrent_policy": false,
+            "use_recurrent_policy": false,
+            "weight_decay": 0
+        },
+        "render": {
+            "render_episodes": 10,
+            "use_render": false
+        },
+        "seed": {
+            "seed": 1,
+            "seed_specify": true
+        },
+        "train": {
+            "episode_length": 600,
+            "eval_interval": 25,
+            "log_interval": 5,
+            "model_dir": null,
+            "n_rollout_threads": 20,
+            "num_env_steps": 1000000,
+            "use_linear_lr_decay": false,
+            "use_proper_time_limits": true,
+            "use_valuenorm": true
+        }
+    },
+    "env_args": {
+        "area_size": [
+            1000,
+            1000
+        ],
+        "drone_config": {
+            "discrete_action_space": true,
+            "drone_max_charge": 100,
+            "drone_max_speed": 10,
+            "drone_ui_dimension": 16,
+            "drones_starting_pos": []
+        },
+        "drone_sensor": {
+            "model": "RoundCamera",
+            "params": {
+                "sensing_range": 50
+            }
+        },
+        "max_cycles": 600,
+        "max_obstacles": 0,
+        "min_obstacles": 0,
+        "n_drones": 1,
+        "n_observers": 1,
+        "n_provisioners": 0,
+        "observer_comm_range": 150,
+        "observer_sensor": {
+            "model": "ForwardFacingCamera",
+            "params": {
+                "hfov": 0.5235987755982988,
+                "sensing_range": 200
+            }
+        },
+        "patrol_config": {
+            "area": [
+                [
+                    100,
+                    100
+                ],
+                [
+                    250,
+                    100
+                ],
+                [
+                    820,
+                    480
+                ],
+                [
+                    600,
+                    800
+                ],
+                [
+                    100,
+                    620
+                ]
+            ],
+            "benchmark": true
+        },
+        "poi_config": [
+            {
+                "dimension": [
+                    8,
+                    8
+                ],
+                "spawn_mode": "random",
+                "speed": 2.0
+            }
+        ],
+        "provisioner_sensor": {
+            "model": "ForwardFacingCamera",
+            "params": {
+                "hfov": 1.5707963267948966,
+                "sensing_range": 30
+            }
+        },
+        "render_ratio": 1.0,
+        "rescuing_targets": false,
+        "time_factor": 1
+    },
+    "main_args": {
+        "algo": "mappo",
+        "env": "hemac",
+        "exp_name": "tuned_config",
+        "load_config": ""
+    }
+}
