@@ -88,6 +88,10 @@ def main():
     # start training
     from harl.runners import RUNNER_REGISTRY
 
+    print("---ARGS---")
+    print("args:", args)
+    print("algo_args:", algo_args)
+    print("env_args:", env_args)
     runner = RUNNER_REGISTRY[args["algo"]](args, algo_args, env_args)
     runner.run()
     runner.close()

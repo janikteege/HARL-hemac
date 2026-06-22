@@ -1,15 +1,17 @@
-for entropy in 0.05 0.08 0.12 0.16; do
-  for gamma in 0.95 0.97 0.99; do
-    for lr in 5e-5 1e-4; do
+for gamma in 0.95 0.99; do
+  for ppo_epoch in 3 5 7; do
+    for recurrent in False True; do
       python train.py \
-	--env hemac \
-	--algo mappo \
+        --env hemac \
+        --algo mappo \
         --load_config ./../tuned_configs/hemac/ippo/config.json \
-        --exp_name "e${entropy}_g${gamma}_lr${lr}" \
-	--share_param False \
-        --entropy_coef $entropy \
+        --exp_name "runA_g${gamma}_ppo${ppo_epoch}_rec${recurrent}" \
         --gamma $gamma \
-	--lr $lr
+        --ppo_epoch $ppo_epoch \
+        --use_recurrent_policy $recurrent \
+        --use_naive_recurrent_policy False \
+        --action_aggregation mean \
+        --share_param False
     done
   done
 done
