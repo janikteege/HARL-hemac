@@ -40,9 +40,8 @@
             "data_chunk_length": 10,
             "gain": 0.01,
             "hidden_sizes": [
-                128,
-                128,
-		128
+		256,
+		256
             ],
             "initialization_method": "orthogonal_",
             "lr": 1e-4,

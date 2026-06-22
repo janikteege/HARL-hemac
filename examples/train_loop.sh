@@ -5,7 +5,7 @@ for gamma in 0.95 0.99; do
         --env hemac \
         --algo mappo \
         --load_config ./../tuned_configs/hemac/ippo/config.json \
-        --exp_name "runA_g${gamma}_ppo${ppo_epoch}_rec${recurrent}" \
+        --exp_name "runB_g${gamma}_ppo${ppo_epoch}_rec${recurrent}" \
         --gamma $gamma \
         --ppo_epoch $ppo_epoch \
         --use_recurrent_policy $recurrent \
