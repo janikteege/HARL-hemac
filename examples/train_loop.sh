@@ -1,6 +1,6 @@
-for entropy in 0.05 0.08 0.12; do
-  for gamma in 0.95 0.99; do
-    for lr in 1e-4 2e-5; do
+for entropy in 0.05 0.08 0.12 0.16; do
+  for gamma in 0.95 0.97 0.99; do
+    for lr in 5e-5 1e-4; do
       python train.py \
 	--env hemac \
 	--algo mappo \
