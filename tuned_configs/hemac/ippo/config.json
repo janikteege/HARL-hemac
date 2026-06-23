@@ -9,7 +9,7 @@
             "entropy_coef": 0.05,
             "fixed_order": false,
             "gae_lambda": 0.95,
-            "gamma": 0.97,
+            "gamma": 0.99,
             "huber_delta": 10.0,
             "max_grad_norm": 5.0,
             "ppo_epoch": 3,
@@ -19,7 +19,7 @@
             "use_huber_loss": true,
             "use_max_grad_norm": true,
             "use_policy_active_masks": true,
-            "value_loss_coef": 0.5
+            "value_loss_coef": 1
         },
         "device": {
             "cuda": true,
@@ -50,7 +50,7 @@
             "std_x_coef": 1,
             "std_y_coef": 0.5,
             "use_feature_normalization": true,
-            "use_naive_recurrent_policy": true,
+            "use_naive_recurrent_policy": false,
             "use_recurrent_policy": true,
             "weight_decay": 0
         },
@@ -69,7 +69,7 @@
             "model_dir": null,
             "n_rollout_threads": 20,
             "num_env_steps": 3000000,
-            "use_linear_lr_decay": true,
+            "use_linear_lr_decay": false,
             "use_proper_time_limits": true,
             "use_valuenorm": true
         }
