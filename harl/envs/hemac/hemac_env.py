@@ -3,6 +3,7 @@ import numpy as np
 from gymnasium import spaces
 from hemac import HeMAC_v0
 from hemac.environment.drone import Drone
+from hemac.environment.observer import Observer
 
 
 class HeMACEnv:
@@ -135,12 +136,21 @@ class HeMACEnv:
         for agent in hemac_env.agents_list:
             if isinstance(agent, Drone):
                 state_list.extend([agent.x, agent.y])  # Position
+                state_list.extend([agent.vx, agent.vy])  # Speed
                 state_list.append(
                     agent.charge_level / agent.max_charge
                 )  # Normalized charge
                 state_list.append(agent.carried_targets)  # Targets being carried
 
         # MAYBE OBSERVER STATE
+        for agent in hemac_env.agents_list:
+            if isinstance(agent, Observer):
+                state_list.extend([agent.x, agent.y])  # Position
+                state_list.append(int(agent.goal_in_view))  # sees POI
+                state_list.append(
+                    agent.orientation
+                )  # rad, orientation angle, speed is constant
+
         # ALSO PROVISIONER STATE
 
         # EPISODE STATUS
@@ -160,6 +170,9 @@ class HeMACEnv:
         # Count components
         n_pois = hemac_env.number_of_POIs
         n_drones = sum(1 for agent in hemac_env.agents_list if isinstance(agent, Drone))
+        n_observers = sum(
+            1 for agent in hemac_env.agents_list if isinstance(agent, Observer)
+        )
 
         # Calculate total state size
         state_size = (
@@ -167,7 +180,8 @@ class HeMACEnv:
             + 3 * n_pois  # POI: (x, y, detected)
             + 2  # Base position
             + 2  # Observer communication
-            + 4 * n_drones  # Drones: (x, y, charge, targets)
+            + 6 * n_drones  # Drones: (x, y, vx, vy, charge, targets)
+            + 4 * n_observers  # Observers: (x, y, sees_poi, orientation)
             + 2  # Collision, terminate flags
             + 1  # Global reward
         )
