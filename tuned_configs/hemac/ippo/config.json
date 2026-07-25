@@ -35,7 +35,7 @@
             "log_dir": "./results"
         },
         "model": {
-            "activation_func": "tanh",
+            "activation_func": "relu",
             "critic_lr": 1e-4,
             "data_chunk_length": 10,
             "gain": 0.01,
@@ -148,7 +148,7 @@
                 "sensing_range": 30
             }
         },
-        "render_ratio": 0.6,
+        "render_ratio": 1.0,
         "rescuing_targets": false,
         "time_factor": 1
     },
