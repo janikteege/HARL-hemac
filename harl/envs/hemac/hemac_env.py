@@ -42,9 +42,7 @@ class HeMACEnv:
             )
             for _ in self.agents
         ]
-        self.share_observation_space = [
-            self.env.observation_space(agent) for agent in self.agents
-        ]
+        self.share_observation_space = [self.get_state_space()]
         self.action_space = [self.env.action_space(agent) for agent in self.agents]
 
     def step(self, actions):
@@ -65,14 +63,14 @@ class HeMACEnv:
         dones = {
             agent: terminations[agent] or truncations[agent] for agent in self.agents
         }
-        share_observations = self.unwrap(observations)
+        share_observations = [self._get_state_curated()]
 
         total_reward = sum(rewards.values())
-        team_rewards = [[total_reward]] * self.n_agents
+        # team_rewards = [[total_reward]] * self.n_agents
         return (
             self._pad_observations(self.unwrap(observations)),
             share_observations,
-            team_rewards,
+            self.unwrap(rewards),
             self.unwrap(dones),
             self.unwrap(infos),
             self.get_avail_actions(),
@@ -84,7 +82,7 @@ class HeMACEnv:
         self.agents = list(self.env.possible_agents)
         self.cur_step = 0
         observations = [observations_dict[agent] for agent in self.agents]
-        share_observations = [observations_dict[agent] for agent in self.agents]
+        share_observations = [self._get_state_curated()]
         available_actions = self.get_avail_actions()
         return (
             self._pad_observations(observations),
@@ -136,6 +134,7 @@ class HeMACEnv:
         # DRONE STATES (for each drone)
         for agent in hemac_env.agents_list:
             if isinstance(agent, Drone):
+                state_list.append(0)  # 0 for agent type drone
                 state_list.extend([agent.x, agent.y])  # Position
                 state_list.extend([agent.vx, agent.vy])  # Speed
                 state_list.append(
@@ -146,6 +145,7 @@ class HeMACEnv:
         # MAYBE OBSERVER STATE
         for agent in hemac_env.agents_list:
             if isinstance(agent, Observer):
+                state_list.append(1)  # 1 for agent type observer
                 state_list.extend([agent.x, agent.y])  # Position
                 state_list.append(int(agent.goal_in_view))  # sees POI
                 state_list.append(
@@ -153,6 +153,8 @@ class HeMACEnv:
                 )  # rad, orientation angle, speed is constant
 
         # ALSO PROVISIONER STATE
+
+        # NUMBER OF OBSTACLES
 
         # EPISODE STATUS
         state_list.append(float(hemac_env.collided))  # Collision flag
@@ -181,8 +183,8 @@ class HeMACEnv:
             + 3 * n_pois  # POI: (x, y, detected)
             + 2  # Base position
             + 2  # Observer communication
-            + 6 * n_drones  # Drones: (x, y, vx, vy, charge, targets)
-            + 4 * n_observers  # Observers: (x, y, sees_poi, orientation)
+            + 7 * n_drones  # Drones: (type, x, y, vx, vy, charge, targets)
+            + 5 * n_observers  # Observers: (type, x, y, sees_poi, orientation)
             + 2  # Collision, terminate flags
             + 1  # Global reward
         )
