@@ -4,7 +4,7 @@ set -euo pipefail
 BASE_CONFIG="./../tuned_configs/hemac/ippo/config.json"
 
 for hs in 128 256; do
-	  exp="extended_state_compact_hs${hs}"
+	  exp="extended_state_concat_hs${hs}"
 
 	  python -Xfrozen_modules=off train.py \
 	    --env hemac \
