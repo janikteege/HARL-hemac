@@ -42,7 +42,7 @@ class HeMACEnv:
             )
             for _ in self.agents
         ]
-        self.share_observation_space = [self.get_state_space()]
+        self.share_observation_space = [self.get_state_space() for _ in self.agents]
         self.action_space = [self.env.action_space(agent) for agent in self.agents]
 
     def step(self, actions):
@@ -63,14 +63,16 @@ class HeMACEnv:
         dones = {
             agent: terminations[agent] or truncations[agent] for agent in self.agents
         }
-        share_observations = [self._get_state_curated()]
+        state = self._get_state_curated()
+        share_observations = [state for _ in self.agents]
 
-        total_reward = sum(rewards.values())
+        # total_reward = sum(rewards.values())
         # team_rewards = [[total_reward]] * self.n_agents
+        individual_rewards = [[rewards[agent]] for agent in self.agents]
         return (
             self._pad_observations(self.unwrap(observations)),
             share_observations,
-            self.unwrap(rewards),
+            individual_rewards,
             self.unwrap(dones),
             self.unwrap(infos),
             self.get_avail_actions(),
@@ -82,7 +84,8 @@ class HeMACEnv:
         self.agents = list(self.env.possible_agents)
         self.cur_step = 0
         observations = [observations_dict[agent] for agent in self.agents]
-        share_observations = [self._get_state_curated()]
+        state = self._get_state_curated()
+        share_observations = [state for _ in self.agents]
         available_actions = self.get_avail_actions()
         return (
             self._pad_observations(observations),
