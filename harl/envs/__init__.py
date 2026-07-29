@@ -1,4 +1,5 @@
 from absl import flags
+from harl.envs.hemac.hemac_logger import HeMACLogger
 from harl.envs.smac.smac_logger import SMACLogger
 from harl.envs.smacv2.smacv2_logger import SMACv2Logger
 from harl.envs.mamujoco.mamujoco_logger import MAMuJoCoLogger
@@ -20,4 +21,5 @@ LOGGER_REGISTRY = {
     "dexhands": DexHandsLogger,
     "smacv2": SMACv2Logger,
     "lag": LAGLogger,
+    "hemac": HeMACLogger,
 }

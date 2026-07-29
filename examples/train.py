@@ -1,4 +1,5 @@
 """Train an algorithm."""
+
 import argparse
 import json
 from harl.utils.configs_tools import get_defaults_yaml_args, update_args
@@ -40,8 +41,9 @@ def main():
             "dexhands",
             "smacv2",
             "lag",
+            "hemac",
         ],
-        help="Environment name. Choose from: smac, mamujoco, pettingzoo_mpe, gym, football, dexhands, smacv2, lag.",
+        help="Environment name. Choose from: smac, mamujoco, pettingzoo_mpe, gym, football, dexhands, smacv2, lag, hemac.",
     )
     parser.add_argument(
         "--exp_name", type=str, default="installtest", help="Experiment name."
@@ -92,4 +94,8 @@ def main():
 
 
 if __name__ == "__main__":
+    import debugpy
+
+    debugpy.listen(("0.0.0.0", 6666))
+    debugpy.wait_for_client()
     main()
