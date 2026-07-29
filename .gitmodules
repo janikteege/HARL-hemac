@@ -2,5 +2,5 @@
 	path = harl/envs/lag/JSBSim/data
 	url = https://github.com/JSBSim-Team/jsbsim.git
 [submodule "hemac"]
-	path = hemac
+	path = external/hemac
 	url = https://github.com/ThalesGroup/hemac.git
