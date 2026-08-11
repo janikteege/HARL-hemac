@@ -2,9 +2,11 @@
 
 import os
 import random
+
 import numpy as np
 import torch
-from harl.envs.env_wrappers import ShareSubprocVecEnv, ShareDummyVecEnv
+
+from harl.envs.env_wrappers import ShareDummyVecEnv, ShareSubprocVecEnv
 
 
 def check(value):
@@ -38,11 +40,11 @@ def get_shape_from_act_space(act_space):
     """
     if act_space.__class__.__name__ == "Discrete":
         act_shape = 1
-    elif act_space.__class__.__name__ == "MultiDiscrete":
-        act_shape = act_space.shape[0]
-    elif act_space.__class__.__name__ == "Box":
-        act_shape = act_space.shape[0]
-    elif act_space.__class__.__name__ == "MultiBinary":
+    elif (
+        act_space.__class__.__name__ == "MultiDiscrete"
+        or act_space.__class__.__name__ == "Box"
+        or act_space.__class__.__name__ == "MultiBinary"
+    ):
         act_shape = act_space.shape[0]
     return act_shape
 
@@ -231,7 +233,7 @@ def make_render_env(env_name, seed, env_args):
     elif env_name == "hemac":
         from harl.envs.hemac.hemac_env import HeMACEnv
 
-        env = HeMACEnv(env_args)
+        env = HeMACEnv({**env_args, "render_mode": "human"})
         env.seed(seed * 60000)
     else:
         print("Can not support the " + env_name + "environment.")
@@ -257,19 +259,14 @@ def get_num_agents(env, env_args, envs):
         from harl.envs.smac.smac_maps import get_map_params
 
         return get_map_params(env_args["map_name"])["n_agents"]
-    elif env == "smacv2":
-        return envs.n_agents
-    elif env == "mamujoco":
-        return envs.n_agents
-    elif env == "pettingzoo_mpe":
-        return envs.n_agents
-    elif env == "gym":
-        return envs.n_agents
-    elif env == "football":
-        return envs.n_agents
-    elif env == "dexhands":
-        return envs.n_agents
-    elif env == "lag":
-        return envs.n_agents
-    elif env == "hemac":
+    elif (
+        env == "smacv2"
+        or env == "mamujoco"
+        or env == "pettingzoo_mpe"
+        or env == "gym"
+        or env == "football"
+        or env == "dexhands"
+        or env == "lag"
+        or env == "hemac"
+    ):
         return envs.n_agents
