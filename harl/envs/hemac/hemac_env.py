@@ -3,6 +3,8 @@ import copy
 import numpy as np
 from gymnasium import spaces
 from hemac import HeMAC_v0
+from hemac.environment.drone import Drone
+from hemac.environment.observer import Observer
 
 
 class HeMACEnv:
@@ -32,14 +34,9 @@ class HeMACEnv:
             )
             for _ in self.env.unwrapped.possible_agents
         ]
+        state_space = self.get_state_space()
         self.share_observation_space = [
-            spaces.Box(
-                low=-10000.0,
-                high=10000.0,
-                shape=(self._max_obs_dim,),
-                dtype=np.float32,
-            )
-            for _ in self.env.unwrapped.possible_agents
+            state_space for _ in self.env.unwrapped.possible_agents
         ]
         self.action_space = [
             self.env.action_space(agent) for agent in self.env.unwrapped.possible_agents
@@ -53,6 +50,8 @@ class HeMACEnv:
             observations[agent] for agent in self.env.unwrapped.possible_agents
         ]
         observation_list = self._pad_observations(observation_list)
+        state = self.get_state_observations(observations)
+        state_observations = [state for _ in self.env.unwrapped.possible_agents]
         # rewards already include global reward
         individual_rewards = [
             [rewards[agent]] for agent in self.env.unwrapped.possible_agents
@@ -61,14 +60,130 @@ class HeMACEnv:
             agent: terminations[agent] or truncations[agent]
             for agent in self.env.unwrapped.possible_agents
         }
+        print(f"rewards {individual_rewards}")
         return (
             observation_list,
-            observation_list,
+            state_observations,
             individual_rewards,
             self.unwrap(dones),
             self.unwrap(infos),
             self.get_available_actions(),
         )
+
+    def get_state_observations(self, observations):
+        # information about all the agents and targets
+        # position relative to origin
+        # encoding of agent types
+        # last actions
+        # information about the scenario, ie number of obstacles, position of the base
+        # road network graph
+        hemac_env = self.env.unwrapped.env
+        # self.env.state() just returns [0,0] for hemac
+        # that is useless, so we use our own global state
+        state_list = []
+
+        # EPISODE PROGRESS
+        state_list.append(
+            hemac_env.num_frames / hemac_env.max_cycles
+        )  # Normalized timestep
+
+        # POI Info
+        for goal in hemac_env.goals:  # there is env.number_of_POIs
+            state_list.extend(
+                [
+                    goal.x / hemac_env.area.width,
+                    goal.y / hemac_env.area.height,
+                    int(goal.detected),
+                ]
+            )
+
+        # BASE/HOME POSITION
+        base = hemac_env.world.base
+        state_list.extend(
+            [base.centerx / hemac_env.area.width, base.centery / hemac_env.area.height]
+        )
+
+        # OBSERVER COMMUNICATION (what all drones see)
+        goal_x_norm = hemac_env.world.observer_communication[0] / hemac_env.area.width
+        goal_y_norm = hemac_env.world.observer_communication[1] / hemac_env.area.height
+        state_list.append(goal_x_norm)
+        state_list.append(goal_y_norm)
+
+        # DRONE STATES (for each drone)
+        for agent_key in self.env.unwrapped.possible_agents:
+            agent = hemac_env.agents_list[hemac_env.agent_name_mapping[agent_key]]
+            if isinstance(agent, Drone):
+                state_list.append(0)  # 0 for agent type drone
+                state_list.extend(
+                    [agent.x / hemac_env.area.width, agent.y / hemac_env.area.height]
+                )  # Position
+                state_list.extend(
+                    [agent.vx / agent.max_speed, agent.vy / agent.max_speed]
+                )  # Speed
+                state_list.append(
+                    agent.charge_level / agent.max_charge
+                )  # Normalized charge
+                state_list.append(
+                    agent.carried_targets / agent.carrying_capacity
+                )  # Targets being carried
+
+        # MAYBE OBSERVER STATE
+        for agent_key in self.env.unwrapped.possible_agents:
+            agent = hemac_env.agents_list[hemac_env.agent_name_mapping[agent_key]]
+            if isinstance(agent, Observer):
+                state_list.append(1)  # 1 for agent type observer
+                state_list.extend(
+                    [agent.x / hemac_env.area.width, agent.y / hemac_env.area.height]
+                )  # Position
+                state_list.append(int(agent.goal_in_view))  # sees POI
+                state_list.append(
+                    agent.orientation / (2 * np.pi)
+                )  # rad, orientation angle, speed is constant
+
+        # ALSO PROVISIONER STATE
+
+        # NUMBER OF OBSTACLES
+
+        # EPISODE STATUS
+        state_list.append(float(hemac_env.collided))  # Collision flag
+        state_list.append(float(hemac_env.terminate))  # Termination flag
+
+        # GLOBAL REWARD
+        # state_list.append(hemac_env.global_reward)
+
+        return np.asarray(state_list, dtype=np.float32)
+
+    def get_state_space(self):
+        """Calculate the shared observation space for the global state."""
+
+        hemac_env = self.env.unwrapped.env
+
+        # Count components
+        n_pois = hemac_env.number_of_POIs
+        n_drones = sum(1 for agent in hemac_env.agents_list if isinstance(agent, Drone))
+        n_observers = sum(
+            1 for agent in hemac_env.agents_list if isinstance(agent, Observer)
+        )
+
+        # Calculate total state size
+        state_size = (
+            1  # Episode progress
+            + 3 * n_pois  # POI: (x, y, detected)
+            + 2  # Base position
+            + 2  # Observer communication
+            + 7 * n_drones  # Drones: (type, x, y, vx, vy, charge, targets)
+            + 5 * n_observers  # Observers: (type, x, y, sees_poi, orientation)
+            + 2  # Collision, terminate flags
+            # + 1  # Global reward
+        )
+
+        # Return Box space
+        # Values are typically unbounded or very large
+        shared_obs_space = spaces.Box(
+            low=0, high=1, shape=(state_size,), dtype=np.float32
+        )
+
+        return shared_obs_space
 
     def _format_actions(self, actions):
         action_array = np.asarray(actions)
@@ -81,11 +196,11 @@ class HeMACEnv:
         observation_list = [
             observations[agent] for agent in self.env.unwrapped.possible_agents
         ]
-        # TODO: synthesize a real state
-        # state = [observations[agent] for agent in self.env.unwrapped.possible_agents]
+        state = self.get_state_observations(observations)
+        state_observations = [state for _ in self.env.unwrapped.possible_agents]
         available_actions = self.get_available_actions()
         observation_list = self._pad_observations(observation_list)
-        return observation_list, observation_list, available_actions
+        return observation_list, state_observations, available_actions
 
     def _pad_observations(self, observations):
         padded = []
