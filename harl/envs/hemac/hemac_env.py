@@ -60,7 +60,6 @@ class HeMACEnv:
             agent: terminations[agent] or truncations[agent]
             for agent in self.env.unwrapped.possible_agents
         }
-        print(f"rewards {individual_rewards}")
         return (
             observation_list,
             state_observations,
