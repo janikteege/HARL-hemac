@@ -42,15 +42,143 @@ class HeMACEnv:
             self.env.action_space(agent) for agent in self.env.unwrapped.possible_agents
         ]
 
+    def print_action(self, action):
+        if action == 0:
+            print("Charge")
+        elif action == 1:
+            print("Top Right Full")
+        elif action == 2:
+            print("Bottom Right Full")
+        elif action == 3:
+            print("Top Left Full")
+        elif action == 4:
+            print("Bottom Left Full")
+        # NOTE: add actions for more fine grained control
+        elif action == 5:
+            print("Top Right Light")
+        elif action == 6:
+            print("Bottom Right Light")
+        elif action == 7:
+            print("Top Left Light")
+        elif action == 8:
+            print("Bottom Left Light")
+        elif action == 9:
+            print("Nothing")
+
+    def print_drone_obs(self, obs):
+        print(f"To Goal (x,y): {obs[0]}, {obs[1]}")
+        print(f"Charge Level: {obs[2]}")
+        print(f"To Base (x,y): {obs[3]}, {obs[4]}")
+        print(f"Distances: R{obs[5]} U{obs[6]} L{obs[7]} D{obs[8]}")
+        print(f"Relative Position1 (x,y): {obs[9]} {obs[10]}")
+        print(f"Relative Position2 (x,y): {obs[11]} {obs[12]}")
+
+    def print_state_observation(self, state):
+        """Print the global state observation in a human-readable format."""
+        state = np.asarray(state).reshape(-1)
+        idx = 0
+
+        # EPISODE PROGRESS
+        print("------------ Episode ------------")
+        print(f"Progress: {state[idx]:.3f}")
+        idx += 1
+
+        # POI INFO
+        hemac_env = self.env.unwrapped.env
+        print("------------ POIs ------------")
+
+        for i in range(hemac_env.number_of_POIs):
+            x = state[idx]
+            y = state[idx + 1]
+            detected = state[idx + 2]
+
+            print(f"POI {i}: Position=({x:.3f}, {y:.3f}), Detected={bool(detected)}")
+
+            idx += 3
+
+        # BASE POSITION
+        print("------------ Base ------------")
+        print(f"Position: ({state[idx]:.3f}, {state[idx + 1]:.3f})")
+        idx += 2
+
+        # OBSERVER COMMUNICATION
+        print("------------ Observer Communication ------------")
+        print(f"Goal Position: ({state[idx]:.3f}, {state[idx + 1]:.3f})")
+        idx += 2
+
+        # DRONES
+        print("------------ Drones ------------")
+
+        for agent_key in self.env.unwrapped.possible_agents:
+            agent = hemac_env.agents_list[hemac_env.agent_name_mapping[agent_key]]
+
+            if isinstance(agent, Drone):
+                agent_type = state[idx]
+                x = state[idx + 1]
+                y = state[idx + 2]
+                vx = state[idx + 3]
+                vy = state[idx + 4]
+                charge = state[idx + 5]
+                targets = state[idx + 6]
+
+                print(f"{agent_key}:")
+                print(f"  Type: {int(agent_type)}")
+                print(f"  Position: ({x:.3f}, {y:.3f})")
+                print(f"  Velocity: ({vx:.3f}, {vy:.3f})")
+                print(f"  Charge: {charge:.3f}")
+                print(f"  Carried Targets: {targets:.3f}")
+
+                idx += 7
+
+        # OBSERVERS
+        print("------------ Observers ------------")
+
+        for agent_key in self.env.unwrapped.possible_agents:
+            agent = hemac_env.agents_list[hemac_env.agent_name_mapping[agent_key]]
+
+            if isinstance(agent, Observer):
+                agent_type = state[idx]
+                x = state[idx + 1]
+                y = state[idx + 2]
+                goal_in_view = state[idx + 3]
+                orientation = state[idx + 4]
+
+                print(f"{agent_key}:")
+                print(f"  Type: {int(agent_type)}")
+                print(f"  Position: ({x:.3f}, {y:.3f})")
+                print(f"  Goal in View: {bool(goal_in_view)}")
+                print(f"  Orientation: {orientation:.3f}")
+
+                idx += 5
+
+        # EPISODE STATUS
+        print("------------ Status ------------")
+        print(f"Collision: {bool(state[idx])}")
+        print(f"Terminated: {bool(state[idx + 1])}")
+        idx += 2
+
+        # Sanity check
+        if idx != len(state):
+            print(f"WARNING: {len(state) - idx} unused state values remain.")
+
     def step(self, actions):
         actions = self._format_actions(actions)
         actions = self.wrap(actions)
         observations, rewards, terminations, truncations, infos = self.env.step(actions)
+
+        print("------------Drone0----------")
+        self.print_action(actions["drone_0"])
+        self.print_drone_obs(observations["drone_0"])
+        print("------------Drone1----------")
+        self.print_action(actions["drone_1"])
+        self.print_drone_obs(observations["drone_1"])
+
         observation_list = [
             observations[agent] for agent in self.env.unwrapped.possible_agents
         ]
         observation_list = self._pad_observations(observation_list)
         state = self.get_state_observations(observations)
+        self.print_state_observation(state)
         state_observations = [state for _ in self.env.unwrapped.possible_agents]
         # rewards already include global reward
         individual_rewards = [
@@ -177,9 +305,8 @@ class HeMACEnv:
         )
 
         # Return Box space
-        # Values are typically unbounded or very large
         shared_obs_space = spaces.Box(
-            low=0, high=1, shape=(state_size,), dtype=np.float32
+            low=-1, high=1, shape=(state_size,), dtype=np.float32
         )
 
         return shared_obs_space
