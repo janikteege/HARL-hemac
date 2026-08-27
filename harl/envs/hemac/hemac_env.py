@@ -180,14 +180,15 @@ class HeMACEnv:
         state = self.get_state_observations(observations)
         # self.print_state_observation(state)
         state_observations = [state for _ in self.env.unwrapped.possible_agents]
-        # rewards already include global reward
-        # individual_rewards for all agents after the 3. are discarded -- use a global reward
-        team_reward = sum(
-            rewards[agent] for agent in self.env.unwrapped.possible_agents
-        )
-        individual_rewards = [
-            team_reward for agent in self.env.unwrapped.possible_agents
-        ]
+
+        agents = self.env.unwrapped.possible_agents
+        global_reward = self.env.unwrapped.env.global_reward
+        # HeMAC adds the global reward to every individual reward. Count it once
+        # while retaining all agent-specific safety penalties.
+        individual_reward = sum(rewards[agent] - global_reward for agent in agents)
+        team_reward = global_reward + individual_reward
+        team_rewards = [[team_reward] for _ in agents]
+
         dones = {
             agent: terminations[agent] or truncations[agent]
             for agent in self.env.unwrapped.possible_agents
@@ -195,7 +196,7 @@ class HeMACEnv:
         return (
             observation_list,
             state_observations,
-            individual_rewards,
+            team_rewards,
             self.unwrap(dones),
             self.unwrap(infos),
             self.get_available_actions(),
