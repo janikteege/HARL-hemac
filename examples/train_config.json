@@ -107,7 +107,7 @@
         [250, 250],
         [50, 250]
       ],
-      "benchmark": false
+      "benchmark": true
     },
     "poi_config": [
       {
