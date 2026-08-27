@@ -181,8 +181,12 @@ class HeMACEnv:
         # self.print_state_observation(state)
         state_observations = [state for _ in self.env.unwrapped.possible_agents]
         # rewards already include global reward
+        # individual_rewards for all agents after the 3. are discarded -- use a global reward
+        team_reward = sum(
+            rewards[agent] for agent in self.env.unwrapped.possible_agents
+        )
         individual_rewards = [
-            [rewards[agent]] for agent in self.env.unwrapped.possible_agents
+            team_reward for agent in self.env.unwrapped.possible_agents
         ]
         dones = {
             agent: terminations[agent] or truncations[agent]
