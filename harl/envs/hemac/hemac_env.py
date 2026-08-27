@@ -166,19 +166,19 @@ class HeMACEnv:
         actions = self.wrap(actions)
         observations, rewards, terminations, truncations, infos = self.env.step(actions)
 
-        print("------------Drone0----------")
-        self.print_action(actions["drone_0"])
-        self.print_drone_obs(observations["drone_0"])
-        print("------------Drone1----------")
-        self.print_action(actions["drone_1"])
-        self.print_drone_obs(observations["drone_1"])
+        # print("------------Drone0----------")
+        # self.print_action(actions["drone_0"])
+        # self.print_drone_obs(observations["drone_0"])
+        # print("------------Drone1----------")
+        # self.print_action(actions["drone_1"])
+        # self.print_drone_obs(observations["drone_1"])
 
         observation_list = [
             observations[agent] for agent in self.env.unwrapped.possible_agents
         ]
         observation_list = self._pad_observations(observation_list)
         state = self.get_state_observations(observations)
-        self.print_state_observation(state)
+        # self.print_state_observation(state)
         state_observations = [state for _ in self.env.unwrapped.possible_agents]
         # rewards already include global reward
         individual_rewards = [

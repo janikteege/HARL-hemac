@@ -72,7 +72,7 @@
     }
   },
   "env_args": {
-    "area_size": [500, 500],
+    "area_size": [300, 300],
     "drone_config": {
       "discrete_action_space": true,
       "drone_max_charge": 9999,
@@ -103,9 +103,9 @@
     "patrol_config": {
       "area": [
         [50, 50],
-        [450, 50],
-        [450, 450],
-        [50, 450]
+        [250, 50],
+        [250, 250],
+        [50, 250]
       ],
       "benchmark": false
     },
@@ -128,7 +128,7 @@
     "time_factor": 0.5
   },
   "main_args": {
-    "algo": "mappo",
+    "algo": "happo",
     "env": "hemac"
   }
 }
