@@ -41,7 +41,7 @@
       "gain": 0.01,
       "hidden_sizes": [128, 128],
       "initialization_method": "orthogonal_",
-      "lr": 0.0002,
+      "lr": 0.0005,
       "opti_eps": 1e-5,
       "recurrent_n": 1,
       "std_x_coef": 1,
@@ -61,18 +61,18 @@
     },
     "train": {
       "episode_length": 600,
-      "eval_interval": 25,
-      "log_interval": 5,
+      "eval_interval": 10,
+      "log_interval": 10,
       "model_dir": null,
       "n_rollout_threads": 8,
-      "num_env_steps": 100000,
+      "num_env_steps": 500000,
       "use_linear_lr_decay": false,
       "use_proper_time_limits": true,
       "use_valuenorm": true
     }
   },
   "env_args": {
-    "area_size": [300, 300],
+    "area_size": [500, 500],
     "drone_config": {
       "discrete_action_space": true,
       "drone_max_charge": 9999,
@@ -103,9 +103,9 @@
     "patrol_config": {
       "area": [
         [50, 50],
-        [250, 50],
-        [250, 250],
-        [50, 250]
+        [450, 50],
+        [450, 450],
+        [50, 450]
       ],
       "benchmark": true
     },
@@ -123,7 +123,7 @@
         "sensing_range": 30
       }
     },
-    "render_ratio": 0.6,
+    "render_ratio": 1.0,
     "rescuing_targets": false,
     "time_factor": 0.5
   },
