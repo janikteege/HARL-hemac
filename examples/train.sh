@@ -1,3 +1,3 @@
 python train.py \
-	--exp_name "014_simple_model_team_rewards" \
+	--exp_name "017_trying_logs" \
 	--load_config train_config.json

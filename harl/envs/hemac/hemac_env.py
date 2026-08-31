@@ -166,6 +166,10 @@ class HeMACEnv:
         actions = self.wrap(actions)
         observations, rewards, terminations, truncations, infos = self.env.step(actions)
 
+        for agent in self.env.unwrapped.possible_agents:
+            if truncations[agent] and not terminations[agent]:
+                infos[agent]["bad_transition"] = True
+
         # print("------------Drone0----------")
         # self.print_action(actions["drone_0"])
         # self.print_drone_obs(observations["drone_0"])
