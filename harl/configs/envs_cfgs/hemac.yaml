@@ -1,4 +1,5 @@
 time_factor: 0.5
+state_type: FP
 area_size: [500, 500]
 max_cycles: 600
 render_ratio: 0.6

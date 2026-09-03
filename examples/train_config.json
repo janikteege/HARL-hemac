@@ -73,6 +73,7 @@
   },
   "env_args": {
     "area_size": [500, 500],
+    "state_type": "FP",
     "drone_config": {
       "discrete_action_space": true,
       "drone_max_charge": 9999,
