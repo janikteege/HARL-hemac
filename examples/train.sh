@@ -1,3 +1,3 @@
 python train.py \
-	--exp_name "021_reward_going_to_goal_zero_sum" \
+	--exp_name "026_recurrent" \
 	--load_config train_config.json

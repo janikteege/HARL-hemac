@@ -1,5 +1,5 @@
 python train.py \
-	--load_config "../results/hemac/hemac/happo/021_reward_going_to_goal_zero_sum/seed-00001-2026-09-05-12-49-27/config.json" \
-	--model_dir "../results/hemac/hemac/happo/021_reward_going_to_goal_zero_sum/seed-00001-2026-09-05-12-49-27/models"\
+	--load_config "../results/hemac/hemac/happo/025_communication_3.0/seed-00001-2026-09-06-12-35-33/config.json" \
+	--model_dir "../results/hemac/hemac/happo/025_communication_3.0/seed-00001-2026-09-06-12-35-33/models"\
 	--torch_threads 1 \
 	--use_render True \
