@@ -16,6 +16,7 @@ class HeMACEnv:
 
         self.args = copy.deepcopy(args)
         self.args.pop("state_type", None)
+        self._pending_seed = None
         self.env = HeMAC_v0.parallel_env(**self.args)
         self.n_agents = len(self.env.possible_agents)
 
@@ -356,7 +357,10 @@ class HeMACEnv:
         return action_array
 
     def reset(self, seed=None):
-        observations, infos = self.env.reset(seed=seed)
+        effective_seed = seed if seed is not None else self._pending_seed
+        observations, infos = self.env.reset(seed=effective_seed)
+        self._pending_seed = None
+
         observation_list = [
             observations[agent] for agent in self.env.unwrapped.possible_agents
         ]
@@ -391,7 +395,7 @@ class HeMACEnv:
         return [1] * self.action_space[agent_id].n
 
     def seed(self, seed):
-        self.env.reset(seed=seed)
+        self._pending_seed = seed
 
     def render(self):
         return self.env.render()
