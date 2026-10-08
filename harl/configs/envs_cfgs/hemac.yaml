@@ -7,7 +7,7 @@ n_observers: 1
 n_drones: 1
 n_provisioners: 0
 min_obstacles: 1
-max_obstacles: 2
+max_obstacles: 1
 rescuing_targets: False
 observer_comm_range: 300
 patrol_config:
