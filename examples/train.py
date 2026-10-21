@@ -2,6 +2,7 @@
 
 import argparse
 import json
+
 from harl.utils.configs_tools import get_defaults_yaml_args, update_args
 
 
@@ -10,6 +11,12 @@ def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
+    parser.add_argument(
+        "--config_only",
+        help="Only Print the config. Does not run anything.",
+        action="store_true",
+    )
+
     parser.add_argument(
         "--algo",
         type=str,
@@ -78,12 +85,22 @@ def main():
     update_args(unparsed_dict, algo_args, env_args)  # update args from command line
 
     if args["env"] == "dexhands":
-        import isaacgym  # isaacgym has to be imported before PyTorch
+        pass  # isaacgym has to be imported before PyTorch
 
     # note: isaac gym does not support multiple instances, thus cannot eval separately
     if args["env"] == "dexhands":
         algo_args["eval"]["use_eval"] = False
         algo_args["train"]["episode_length"] = env_args["hands_episode_length"]
+    # NOTE: ---- seperation from config and running
+
+    if args["config_only"]:
+        print(
+            json.dumps(
+                {"main_args": args, "algo_args": algo_args, "env_args": env_args},
+                indent=2,
+            )
+        )
+        return
 
     # start training
     from harl.runners import RUNNER_REGISTRY
