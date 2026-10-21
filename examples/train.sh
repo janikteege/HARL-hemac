@@ -1,3 +1,3 @@
 python train.py \
-	--exp_name "026_recurrent" \
-	--load_config train_config.json
+	--exp_name "pilot_current10" \
+	--load_config "../experiments/pilot_speeds10.json"
