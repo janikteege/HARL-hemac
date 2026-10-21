@@ -1,3 +1,4 @@
+cd -- "$(dirname "$0")" || exit 1
 experiment_name="${1:?Usage: $0 EXPERIMENT [options]}"
 shift
 python train.py \
