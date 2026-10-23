@@ -1,26 +1,28 @@
 """Base runner for on-policy algorithms."""
 
 import time
+
 import numpy as np
-import torch
 import setproctitle
-from harl.common.valuenorm import ValueNorm
+import torch
+
+from harl.algorithms.actors import ALGO_REGISTRY
+from harl.algorithms.critics.v_critic import VCritic
 from harl.common.buffers.on_policy_actor_buffer import OnPolicyActorBuffer
 from harl.common.buffers.on_policy_critic_buffer_ep import OnPolicyCriticBufferEP
 from harl.common.buffers.on_policy_critic_buffer_fp import OnPolicyCriticBufferFP
-from harl.algorithms.actors import ALGO_REGISTRY
-from harl.algorithms.critics.v_critic import VCritic
-from harl.utils.trans_tools import _t2n
+from harl.common.valuenorm import ValueNorm
+from harl.envs import LOGGER_REGISTRY
+from harl.utils.configs_tools import init_dir, save_config
 from harl.utils.envs_tools import (
-    make_eval_env,
-    make_train_env,
-    make_render_env,
-    set_seed,
     get_num_agents,
+    make_eval_env,
+    make_render_env,
+    make_train_env,
+    set_seed,
 )
 from harl.utils.models_tools import init_device
-from harl.utils.configs_tools import init_dir, save_config
-from harl.envs import LOGGER_REGISTRY
+from harl.utils.trans_tools import _t2n
 
 
 class OnPolicyBaseRunner:
@@ -107,10 +109,12 @@ class OnPolicyBaseRunner:
                 assert (
                     self.envs.observation_space[agent_id]
                     == self.envs.observation_space[0]
-                ), "Agents have heterogeneous observation spaces, parameter sharing is not valid."
-                assert (
-                    self.envs.action_space[agent_id] == self.envs.action_space[0]
-                ), "Agents have heterogeneous action spaces, parameter sharing is not valid."
+                ), (
+                    "Agents have heterogeneous observation spaces, parameter sharing is not valid."
+                )
+                assert self.envs.action_space[agent_id] == self.envs.action_space[0], (
+                    "Agents have heterogeneous action spaces, parameter sharing is not valid."
+                )
                 self.actor.append(self.actor[0])
         else:
             self.actor = []
@@ -275,7 +279,7 @@ class OnPolicyBaseRunner:
             self.actor_buffer[agent_id].obs[0] = obs[:, agent_id].copy()
             if self.actor_buffer[agent_id].available_actions is not None:
                 self.actor_buffer[agent_id].available_actions[0] = available_actions[
-                    :, agent_id
+                    :, agent_id, : self.envs.action_space[agent_id].n
                 ].copy()
         if self.state_type == "EP":
             self.critic_buffer.share_obs[0] = share_obs[:, 0].copy()
@@ -356,16 +360,16 @@ class OnPolicyBaseRunner:
         ) = data
 
         dones_env = np.all(dones, axis=1)  # if all agents are done, then env is done
-        rnn_states[
-            dones_env == True
-        ] = np.zeros(  # if env is done, then reset rnn_state to all zero
-            (
-                (dones_env == True).sum(),
-                self.num_agents,
-                self.recurrent_n,
-                self.rnn_hidden_size,
-            ),
-            dtype=np.float32,
+        rnn_states[dones_env == True] = (
+            np.zeros(  # if env is done, then reset rnn_state to all zero
+                (
+                    (dones_env == True).sum(),
+                    self.num_agents,
+                    self.recurrent_n,
+                    self.rnn_hidden_size,
+                ),
+                dtype=np.float32,
+            )
         )
 
         # If env is done, then reset rnn_state_critic to all zero
@@ -440,7 +444,7 @@ class OnPolicyBaseRunner:
                 action_log_probs[:, agent_id],
                 masks[:, agent_id],
                 active_masks[:, agent_id],
-                available_actions[:, agent_id]
+                available_actions[:, agent_id, : self.envs.action_space[agent_id].n]
                 if available_actions[0] is not None
                 else None,
             )
@@ -525,7 +529,9 @@ class OnPolicyBaseRunner:
                     eval_obs[:, agent_id],
                     eval_rnn_states[:, agent_id],
                     eval_masks[:, agent_id],
-                    eval_available_actions[:, agent_id]
+                    eval_available_actions[
+                        :, agent_id, : self.eval_envs.action_space[agent_id].n
+                    ]
                     if eval_available_actions[0] is not None
                     else None,
                     deterministic=True,
@@ -557,16 +563,16 @@ class OnPolicyBaseRunner:
 
             eval_dones_env = np.all(eval_dones, axis=1)
 
-            eval_rnn_states[
-                eval_dones_env == True
-            ] = np.zeros(  # if env is done, then reset rnn_state to all zero
-                (
-                    (eval_dones_env == True).sum(),
-                    self.num_agents,
-                    self.recurrent_n,
-                    self.rnn_hidden_size,
-                ),
-                dtype=np.float32,
+            eval_rnn_states[eval_dones_env == True] = (
+                np.zeros(  # if env is done, then reset rnn_state to all zero
+                    (
+                        (eval_dones_env == True).sum(),
+                        self.num_agents,
+                        self.recurrent_n,
+                        self.rnn_hidden_size,
+                    ),
+                    dtype=np.float32,
+                )
             )
 
             eval_masks = np.ones(
@@ -624,7 +630,9 @@ class OnPolicyBaseRunner:
                             eval_obs[:, agent_id],
                             eval_rnn_states[:, agent_id],
                             eval_masks[:, agent_id],
-                            eval_available_actions[:, agent_id]
+                            eval_available_actions[
+                                :, agent_id, : self.envs.action_space[agent_id].n
+                            ]
                             if eval_available_actions is not None
                             else None,
                             deterministic=True,
@@ -679,7 +687,9 @@ class OnPolicyBaseRunner:
                             eval_obs[:, agent_id],
                             eval_rnn_states[:, agent_id],
                             eval_masks[:, agent_id],
-                            eval_available_actions[:, agent_id]
+                            eval_available_actions[
+                                :, agent_id, : self.envs.action_space[agent_id].n
+                            ]
                             if eval_available_actions[0] is not None
                             else None,
                             deterministic=True,

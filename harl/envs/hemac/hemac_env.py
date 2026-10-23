@@ -174,14 +174,21 @@ class HeMACEnv:
     def get_available_actions(self):
         assert self.discrete
         avail_actions = []
+        max_action_count = max(self.action_space, key=lambda space: space.n).n
         for agent_id in range(self.n_agents):
-            avail_agent = self.get_available_agent_actions(agent_id)
-            avail_actions.append(avail_agent)
+            avail_actions.append(
+                self.get_available_agent_actions(agent_id, pad_to=max_action_count)
+            )
         return avail_actions
 
-    def get_available_agent_actions(self, agent_id):
+    def get_available_agent_actions(self, agent_id, pad_to=None) -> list[int]:
         """Returns the available actions for agent_id"""
-        return [1] * self.action_space[agent_id].n
+        action_count = self.action_space[agent_id].n
+        available_actions = [1] * action_count
+        if pad_to is not None:
+            assert action_count <= pad_to, "pad_to has to be larger than action count"
+            available_actions.extend([0] * (pad_to - action_count))
+        return available_actions
 
     def seed(self, seed):
         self._pending_seed = seed
