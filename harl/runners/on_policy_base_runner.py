@@ -269,6 +269,7 @@ class OnPolicyBaseRunner:
                 self.save()
 
             self.after_update()
+        self.save()
 
     def warmup(self):
         """Warm up the replay buffer."""
