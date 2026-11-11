@@ -751,25 +751,31 @@ class OnPolicyBaseRunner:
             )
 
     def restore(self):
-        """Restore model parameters."""
+        """Restore model parameters.
+
+        Load model to selected device via map_location, if not trained on the same machine, there could be a mismatch
+        """
         for agent_id in range(self.num_agents):
             policy_actor_state_dict = torch.load(
                 str(self.algo_args["train"]["model_dir"])
                 + "/actor_agent"
                 + str(agent_id)
-                + ".pt"
+                + ".pt",
+                map_location=self.device,
             )
             self.actor[agent_id].actor.load_state_dict(policy_actor_state_dict)
         if not self.algo_args["render"]["use_render"]:
             policy_critic_state_dict = torch.load(
-                str(self.algo_args["train"]["model_dir"]) + "/critic_agent" + ".pt"
+                str(self.algo_args["train"]["model_dir"]) + "/critic_agent" + ".pt",
+                map_location=self.device,
             )
             self.critic.critic.load_state_dict(policy_critic_state_dict)
             if self.value_normalizer is not None:
                 value_normalizer_state_dict = torch.load(
                     str(self.algo_args["train"]["model_dir"])
                     + "/value_normalizer"
-                    + ".pt"
+                    + ".pt",
+                    map_location=self.device,
                 )
                 self.value_normalizer.load_state_dict(value_normalizer_state_dict)
 
